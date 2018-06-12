@@ -63,13 +63,13 @@ void logLikelihoodGlobalFit(double *Cube, int &ndim, int &npars, double &lnew, l
     Cube[0] = pL->normPP = Cube[0]*2;
     Cube[1] = pL->normPEP= Cube[1]*2;
     Cube[2] = pL->normO  = Cube[2]*10;
-    Cube[3] = pL->normN  = 1;//Cube[3]*10;
+    Cube[3] = pL->normN  = Cube[3]*10;
     Cube[4] = pL->normBE = Cube[4]*2;
     Cube[5] = pL->normB  = Cube[5]*50;
     Cube[6] = pL->normF  = Cube[6]*50;
 
     //nuclear reaction chain priors
-    if( pL->normPP + 2.36e-3*pL->normPEP < 8.49e-2*pL->normBE + 9.95e-5*pL->normB )
+/*    if( pL->normPP + 2.36e-3*pL->normPEP < 8.49e-2*pL->normBE + 9.95e-5*pL->normB )
     {
         lnew=-1e299;
         return ;
@@ -84,8 +84,8 @@ void logLikelihoodGlobalFit(double *Cube, int &ndim, int &npars, double &lnew, l
         lnew=-1e299;
         return ;
     }
-
-    lnew = - pow( pL->normPEP/pL->normPP - 1.006 ,2)/2e-4;
+*/
+    lnew = - pow( pL->normPEP/pL->normPP - 1.006 ,2)/2e-1;
 
     //BG nuisance parameters
     int cubei=7;
