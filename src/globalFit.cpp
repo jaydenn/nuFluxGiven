@@ -34,7 +34,7 @@ void globalFit(paramList *pL)
         int outfile = 1;								      // write output files?
         int updateInt = 1000000;							  // update interval (for calling dumper, which isn't used here)
 
-        int ndims = 7;                                // number of parameters in the reconstruction
+        int ndims = 5;                                // number of parameters in the reconstruction
 
         for( int i=0; i<pL->ndet; i++)
         {

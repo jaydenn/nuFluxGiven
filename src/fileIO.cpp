@@ -62,6 +62,9 @@ int readConfigFile(paramList *pL, char *filename)
   
     ret = fgets(temp,200,input);
     sscanf(temp,"%d",&(pL->nBins));
+
+    ret = fgets(temp,200,input);
+    sscanf(temp,"%d",&(pL->logBins));
     
     ret = fgets(temp,200,input);
     sscanf(temp,"%d",&(pL->LC));

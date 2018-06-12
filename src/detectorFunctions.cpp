@@ -3,6 +3,7 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <fstream>
 #ifndef DETECTORSTRUCT_H
     #include "detectorStruct.h"
 #endif    
@@ -26,7 +27,7 @@ double detEff(double Er, int type)
     }
 }
 
-//return background in events/kg/day/keV
+//return background in events/t/year/keV
 double detBackground(double Er, paramList *pList, int detj)
 {
     
@@ -34,13 +35,17 @@ double detBackground(double Er, paramList *pList, int detj)
     {
         case 0: 
             return 1e-99;
-        case 1: 
-            return 0.01;
+        case 1:
+            return 55;
         case 2: 
             return 1e-5;
+        case 3:
+            return gsl_spline_eval(pList->detectors[detj].background, Er, pList->detectors[detj].accelBg);
         default:
+        {
             printf("invalid detector background\n"); 
             return NAN; 
+        }
     }
 }
 
@@ -74,7 +79,7 @@ int newDetector(paramList *pList, char *name, double exp, int sourcej)
 
         pList->detectors[pList->ndet].exposure = exp;
         pList->detectors[pList->ndet].sourcej = sourcej;
-        
+
         //read in detector configuration
         FILE *detsINI;
         detsINI = fopen("detectors.ini","r");
@@ -126,22 +131,22 @@ int newDetector(paramList *pList, char *name, double exp, int sourcej)
         ret = fgets(temp,200,detsINI);
 
         while(!feof(detsINI) && temp[0]!='-')
-        {    
+        {
             if(pList->detectors[pList->ndet].nIso==10)
             {
                 std::cout << "already at max number of isotopes (10)" << std::endl;
                 break;
             }
             sscanf(temp,"%d %d %lf %lf %lf %lf",&(pList->detectors[pList->ndet].isoZ[pList->detectors[pList->ndet].nIso]),&(pList->detectors[pList->ndet].isoA[pList->detectors[pList->ndet].nIso]),&(pList->detectors[pList->ndet].isoFrac[pList->detectors[pList->ndet].nIso]),&(pList->detectors[pList->ndet].isoSZ[pList->detectors[pList->ndet].nIso]),&(pList->detectors[pList->ndet].isoSN[pList->detectors[pList->ndet].nIso]),&(pList->detectors[pList->ndet].isoJN[pList->detectors[pList->ndet].nIso])); 
-            
+
             if ( pList->detectors[pList->ndet].isoJN[pList->detectors[pList->ndet].nIso] < 0.5 )
                 pList->detectors[pList->ndet].isoJN[pList->detectors[pList->ndet].nIso] = 1e-99;
-            
+
             pList->detectors[pList->ndet].nIso++;
-            ret = fgets(temp,200,detsINI);           
+            ret = fgets(temp,200,detsINI);
         }
-        ret = fgets(temp,200,detsINI);    
-        ret = fgets(temp,200,detsINI);            
+        ret = fgets(temp,200,detsINI);
+        ret = fgets(temp,200,detsINI);
 
         std::string comma;
         int isoj=0;
@@ -164,27 +169,43 @@ int newDetector(paramList *pList, char *name, double exp, int sourcej)
         else if(isoj==1)
         {
             std::cout << "Ionizations will be duplicated for each isotope\n";
-            
+
             for(int j=1; j<pList->detectors[pList->ndet].nIso; j++)
                  pList->detectors[pList->ndet].ionization[j] = pList->detectors[pList->ndet].ionization[0];
         }
-        
-        //finished reading in det data         
+
+        //finished reading in det data
         fclose(detsINI);
-        
+
         //only need to calculate background and SM signal once, store in a table for interpolation, stored as events/kg/day/keV
         //get values of bg at relevant energies
         std::cout << "Initializing rates\n";
         nuRatesInit( pList, pList->ndet);
-        rateInit( pList, pList->ndet, &detBackground, pList->detectors[pList->ndet].background);
 
+        if(pList->detectors[pList->ndet].bg == 3)
+        {
+            std::ifstream RFF;
+            RFF.open("data/Rn_Kr_2nuBB-2.dat");
+
+            double Er[478];
+            double Rate[478];
+            for (int i=0; i<478; i++)
+                RFF >> Er[i] >> Rate[i];
+            pList->detectors[pList->ndet].background = gsl_spline_alloc(gsl_interp_linear,478);
+            gsl_spline_init( pList->detectors[pList->ndet].background,Er,Rate,478);
+        }
+        else
+        {
+            pList->detectors[pList->ndet].background = gsl_spline_alloc(gsl_interp_linear,INTERP_POINTS);
+            rateInit( pList, pList->ndet, &detBackground, pList->detectors[pList->ndet].background);
+        }
         //must initialize each flux in turn
         //for(int fluxj=0; fluxj< pList->sources[pList->detectors[pList->ndet].sourcej].numFlux; fluxj++)
-        
+
         std::cout << "\ndone." << std::endl; 
-        
+
         pList->ndet++;
-        
+
         return 0;
         
 }
@@ -192,12 +213,15 @@ int newDetector(paramList *pList, char *name, double exp, int sourcej)
 //returns integrated total # background events per tonne/year for bg type, with recoil  Er_min < Er < Er_max
 double intBgRate(detector *det, double Er_min, double Er_max)                            
 {   
-    if( Er_min > det->ErL && Er_max < det->ErU )
+
+    if( Er_min >= det->ErL && Er_max <= det->ErU )
         return gsl_spline_eval_integ(det->background, Er_min, Er_max, det->accelBg);
     else if( Er_min < det->ErL && Er_max < det->ErU )
         return gsl_spline_eval_integ(det->background, det->ErL, Er_max, det->accelBg);
-    else
+    else if( Er_min < det->ErL && Er_max > det->ErU )
         return gsl_spline_eval_integ(det->background, det->ErL, det->ErU, det->accelBg);
+    else 
+        return 0;
 }
 
 double diffBgRate(detector det, double Er)

@@ -37,10 +37,11 @@ void generateBinnedData(paramList *pList, int detj, int b, int simSeed)
       return ;
     }
 
-    Er_min = pList->detectors[detj].ErL;    
+    Er_min = pList->detectors[detj].ErL;
+    double logBinW = ( log10( pList->detectors[detj].ErU ) - log10 (pList->detectors[detj].ErL ) ) / ( (double) pList->nBins);
 
     double ranBG,ranFlux,BG,SM;
-    if( pList->asimov == 0) 
+    if( pList->asimov == 0 )
     {
         ranFlux= 1+gsl_ran_gaussian(r, pList->sources[pList->detectors[pList->detj].sourcej].nuFluxUn[0]);
         ranBG  = 1+gsl_ran_gaussian(r, pList->detectors[detj].BgUn);
@@ -48,7 +49,11 @@ void generateBinnedData(paramList *pList, int detj, int b, int simSeed)
 
     for(int i=0; i<pList->nBins; i++)
     {
-        pList->detectors[detj].binW[i] = ( pList->detectors[detj].ErU - pList->detectors[detj].ErL ) / ( (double) pList->nBins);
+
+        if(pList->logBins==1)
+            pList->detectors[detj].binW[i] = pow(10, log10(Er_min) + logBinW) - Er_min;
+        else
+            pList->detectors[detj].binW[i] = ( pList->detectors[detj].ErU - pList->detectors[detj].ErL ) / ( (double) pList->nBins);
 
         Er_max = Er_min + pList->detectors[detj].binW[i];
 
@@ -58,14 +63,14 @@ void generateBinnedData(paramList *pList, int detj, int b, int simSeed)
         if( pList->asimov == 1)
             pList->detectors[detj].binnedData[i] = pList->detectors[detj].exposure * ( SM + BG );
         else
-            pList->detectors[detj].binnedData[i] = gsl_ran_poisson(r, pList->detectors[detj].exposure *( ranFlux*SM + ranBG*BG ));                       
-        std::cout << " MC" << i << " " << Er_min << " - " << Er_max << ": bg " << BG <<  " sm " << SM << " obs " << pList->detectors[detj].binnedData[i]<< std::endl;           
+            pList->detectors[detj].binnedData[i] = gsl_ran_poisson(r, pList->detectors[detj].exposure *( ranFlux*SM + ranBG*BG ));
+        //std::cout << " MC" << i << " " << Er_min << " - " << Er_max << ": bg " << BG <<  " sm " << SM << " obs " << pList->detectors[detj].binnedData[i] << std::endl;
         pList->detectors[detj].nEvents += pList->detectors[detj].binnedData[i];
 
         Er_min = Er_max; //update lower bin limit
+
     }
 
     return ;
-     
-}
 
+}
