@@ -70,7 +70,7 @@ void logLikelihoodGlobalFit(double *Cube, int &ndim, int &npars, double &lnew, l
     pL->normB =pL->normF = 1;
 
     //nuclear reaction chain priors
-    if( pL->normPP + 2.36e-3*pL->normPEP < 8.49e-2*pL->normBE + 9.95e-5*pL->normB )
+/*    if( pL->normPP + 2.36e-3*pL->normPEP < 8.49e-2*pL->normBE + 9.95e-5*pL->normB )
     {
         lnew=-1e299;
         return ;
@@ -85,6 +85,8 @@ void logLikelihoodGlobalFit(double *Cube, int &ndim, int &npars, double &lnew, l
         lnew=-1e299;
         return ;
     }
+<<<<<<< HEAD
+*/
 
     lnew = - pow( pL->normPEP/pL->normPP - 1.006 ,2)/0.00034;
 
