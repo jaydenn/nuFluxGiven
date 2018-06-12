@@ -10,11 +10,13 @@
 #ifndef PARAMETERSTRUCT_H
     #include "parameterStruct.h"
 #endif
+
 int nuRatesInit( paramList *pL, int detj)
 {
 
     //read in rate files
-    char const *files[] = {"data/ppn_xe.dat","data/pep_xe.dat","data/N13_xe.dat","data/O15_xe.dat","data/Be7_xe.dat","data/B8_xe.dat","data/F17_xe.dat"};
+//    char const *files[] = {"data/ppn_xe.dat","data/pep_xe.dat","data/N13_xe.dat","data/O15_xe.dat","data/Be7_xe.dat","data/B8_xe.dat","data/F17_xe.dat"};
+    char const *files[] = {"data/ppn_smear10percent.dat","data/pep_smear10percent.dat","data/N13_smear10percent.dat","data/O15_smear10percent.dat","data/7Be_smear10percent.dat","data/bor_smear10percent.dat","data/F17_smear10percent.dat"};
     gsl_spline *splines[] = {pL->detectors[detj].NR_PP, pL->detectors[detj].NR_PEP, pL->detectors[detj].NR_N, pL->detectors[detj].NR_O, pL->detectors[detj].NR_BE,pL->detectors[detj].NR_B,pL->detectors[detj].NR_F};
     std::ifstream RFF;
 
@@ -57,7 +59,7 @@ double diffNuRate(double Er, paramList *pL, int detj)
     rate += pL->normN   * gsl_spline_eval(pL->detectors[detj].NR_N,  Er, pL->detectors[detj].accelN);
     rate += pL->normBE  * gsl_spline_eval(pL->detectors[detj].NR_BE, Er, pL->detectors[detj].accelBE);
     rate += pL->normB  * gsl_spline_eval(pL->detectors[detj].NR_B, Er, pL->detectors[detj].accelB);
-    rate += pL->normF  * gsl_spline_eval(pL->detectors[detj].NR_F, Er, pL->detectors[detj].accelF);
+    //rate += pL->normF  * gsl_spline_eval(pL->detectors[detj].NR_F, Er, pL->detectors[detj].accelF);
 
     return rate;
 }
@@ -72,7 +74,7 @@ double intNuRate(double Er_min, double Er_max, paramList *pL, int detj)
     rate += pL->normN   * gsl_spline_eval_integ(pL->detectors[detj].NR_N,  Er_min, Er_max, pL->detectors[detj].accelN);
     rate += pL->normBE  * gsl_spline_eval_integ(pL->detectors[detj].NR_BE, Er_min, Er_max, pL->detectors[detj].accelBE);
     rate += pL->normB  * gsl_spline_eval_integ(pL->detectors[detj].NR_B, Er_min, Er_max, pL->detectors[detj].accelB);
-    rate += pL->normF  * gsl_spline_eval_integ(pL->detectors[detj].NR_F, Er_min, Er_max, pL->detectors[detj].accelF);
+    //rate += pL->normF  * gsl_spline_eval_integ(pL->detectors[detj].NR_F, Er_min, Er_max, pL->detectors[detj].accelF);
     
     return rate;
 }

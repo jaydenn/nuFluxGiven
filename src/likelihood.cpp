@@ -32,7 +32,7 @@ double logLikelihood(paramList *pList)
     {
         Er_min = pList->detectors[detj].ErL;
         //loop over recoil energy bins
-        for(int i=0; i< pList->nBins; i++)			
+        for(int i=0; i< pList->nBins; i++)
         {
             //set bin limits
             Er_max = Er_min + pList->detectors[detj].binW[i];
@@ -41,7 +41,7 @@ double logLikelihood(paramList *pList)
 
             l = logPoisson( pList->detectors[detj].binnedData[i], pList->detectors[detj].exposure*(SM+BG) );
             loglike += l;
-            //std::cout << "l: " << i << "/" << pList->nBins << " " << Er_min << " - " << Er_max << " exp " << pList->detectors[detj].exposure*(SM + BG)  << " obs: " << pList->detectors[detj].binnedData[i] << " " << l << std::endl;
+            //std::cout << "l: " << i << "/" << pList->nBins << " " << Er_min << " - " << Er_max << " expNu " << pList->detectors[detj].exposure*SM  << " expBG " << pList->detectors[detj].exposure*BG  << " obs: " << pList->detectors[detj].binnedData[i] << " " << l << std::endl;
 
             Er_min = Er_max; //update lower bin limit
         } 
@@ -55,18 +55,19 @@ double logLikelihood(paramList *pList)
 
 void logLikelihoodGlobalFit(double *Cube, int &ndim, int &npars, double &lnew, long &pointer)    
 {
-        
+    lnew=0;
     //get pointer in from MultiNest 
     paramList *pL = (paramList *) pointer;
 
     //scale pars for this point in the parameter space
-    Cube[0] = pL->normPP = Cube[0]*2;
-    Cube[1] = pL->normPEP= Cube[1]*2;
-    Cube[2] = pL->normO  = Cube[2]*10;
-    Cube[3] = pL->normN  = 1;//Cube[3]*10;
-    Cube[4] = pL->normBE = Cube[4]*2;
-    Cube[5] = pL->normB  = Cube[5]*50;
-    Cube[6] = pL->normF  = Cube[6]*50;
+    Cube[0] = pL->normPP = Cube[0]*3;
+    Cube[1] = pL->normPEP= Cube[1]*15;
+    Cube[2] = pL->normO  = Cube[2]*20;
+    Cube[3] = pL->normN  = Cube[3]*20;
+    Cube[4] = pL->normBE = Cube[4]*15;
+//    Cube[5] = pL->normB  = Cube[5]*50;
+//    Cube[6] = pL->normF  = Cube[6]*50;
+    pL->normB =pL->normF = 1;
 
     //nuclear reaction chain priors
     if( pL->normPP + 2.36e-3*pL->normPEP < 8.49e-2*pL->normBE + 9.95e-5*pL->normB )
@@ -85,10 +86,10 @@ void logLikelihoodGlobalFit(double *Cube, int &ndim, int &npars, double &lnew, l
         return ;
     }
 
-    lnew = - pow( pL->normPEP/pL->normPP - 1.006 ,2)/2e-4;
+    lnew = - pow( pL->normPEP/pL->normPP - 1.006 ,2)/0.00034;
 
     //BG nuisance parameters
-    int cubei=7;
+    int cubei=5;
     for(int detj=0; detj < pL->ndet; detj++)
     {
         if(pL->detectors[detj].BgUn > 1e-10)
@@ -104,11 +105,10 @@ void logLikelihoodGlobalFit(double *Cube, int &ndim, int &npars, double &lnew, l
     //calculate CNO fraction
     Cube[pL->nPar-2] = (pL->normN*1.2e-3 + pL->normO*5.641e-3 + pL->normF*1.53e-5)/(1.2e-3 + 5.641e-3 + 1.53e-5);
 
-
     //impose luminosity constraint?
-    if (pL->LC == 1)
-        lnew += - pow( Cube[pL->nPar-1]-1,2) / (2.7e-7);
-
+//    if (pL->LC == 1)
+//        lnew += - pow( Cube[pL->nPar-1]-1,2) / (2.7e-7);
+    
     lnew += logLikelihood(pL);
 
 }
