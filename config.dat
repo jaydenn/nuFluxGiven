@@ -1,9 +1,10 @@
 //Conudl configuration options
 2                         // running mode: 1=rate calc, 2=global fit
-./results/SF_xe_200ty_fixed  // root of output file names, can include directories
-50                        // Use log/linear spaced bins (1/0)
-0                         // Apply luminosity constraint
+./results/SF_xe_200ty_LC_BG  // root of output file names, can include directories
+20                         // How many bins to use
+1			  // Log spaced bins? 1=log 0=linear
+1                         // Apply luminosity constraint
 // Detector  |  Exposure (kg*days) (or starting exposure in evolution mode)
-#XENON  200  Sun 1 
+#XENON  200   Sun 1
 //Asimov data set/random Monte-Carlo (1/0)
 1
