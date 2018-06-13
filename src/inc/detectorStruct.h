@@ -86,7 +86,6 @@ struct detector {
         for(int i=0;i<10;i++)
             ionization[i] = new double [100]();
 
-        background = gsl_spline_alloc(gsl_interp_linear,INTERP_POINTS);
         accelBg = gsl_interp_accel_alloc();
         
         NR_O = gsl_spline_alloc(gsl_interp_linear,INTERP_POINTS);
