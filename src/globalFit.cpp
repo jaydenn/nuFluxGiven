@@ -39,7 +39,7 @@ void globalFit(paramList *pL)
         for( int i=0; i<pL->ndet; i++)
         {
             if( pL->detectors[i].BgUn>1e-10)
-                ndims+=1;
+                ndims+=3;
         }
 
         pL->nPar  = ndims+2;                                // global number of parameters

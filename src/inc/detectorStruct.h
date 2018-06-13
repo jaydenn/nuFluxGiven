@@ -35,10 +35,16 @@ struct detector {
     double *unbinnedData;   //array of i events which occured at energy unbinnedData[i]
     double nEvents;
     
-    double BgNorm, BgUn;  //norm factor for background and fractional uncertainty
+    double BgNorm, BgUn, krBgNorm, rnBgNorm, xeBgNorm;  //norm factor for background and fractional uncertainty
     
     gsl_spline *background;
     gsl_interp_accel *accelBg;
+    gsl_spline *krBackground;
+    gsl_interp_accel *accelkrBg;
+    gsl_spline *rnBackground;
+    gsl_interp_accel *accelrnBg;
+    gsl_spline *xeBackground;
+    gsl_interp_accel *accelxeBg;
 
     gsl_spline *NR_O;
     gsl_interp_accel *accelO;   
