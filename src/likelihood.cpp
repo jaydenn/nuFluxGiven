@@ -69,23 +69,26 @@ void logLikelihoodGlobalFit(double *Cube, int &ndim, int &npars, double &lnew, l
 //    Cube[6] = pL->normF  = Cube[6]*50;
     pL->normB =pL->normF = 1;
 
-    //nuclear reaction chain priors
-    if( pL->normPP + 2.36e-3*pL->normPEP < 8.49e-2*pL->normBE + 9.95e-5*pL->normB )
-    {
-        lnew=-1e299;
-        return ;
-    }
-    if( 1.34*pL->normN < pL->normO )
-    {
-        lnew=-1e299;
-        return ;
-    }
-    if( 37*pL->normO < pL->normF )
-    {
-        lnew=-1e299;
-        return ;
-    }
 
+    //nuclear reaction chain priors
+    if( pL->nucPriors == 1 )
+    {
+        if( pL->normPP + 2.36e-3*pL->normPEP < 8.49e-2*pL->normBE + 9.95e-5*pL->normB )
+        {
+            lnew=-1e299;
+            return ;
+        }
+        if( 1.34*pL->normN < pL->normO )
+        {
+            lnew=-1e299;
+            return ;
+        }
+        if( 37*pL->normO < pL->normF )
+        {
+            lnew=-1e299;
+            return ;
+        }
+    }
 
     lnew = - pow( pL->normPEP/pL->normPP - 1.006 ,2)/0.00034;
 
@@ -109,8 +112,8 @@ void logLikelihoodGlobalFit(double *Cube, int &ndim, int &npars, double &lnew, l
     Cube[pL->nPar-2] = (pL->normN*1.2e-3 + pL->normO*5.641e-3 + pL->normF*1.53e-5)/(1.2e-3 + 5.641e-3 + 1.53e-5);
 
     //impose luminosity constraint?
-    //if (pL->LC == 1)
-    //   lnew += - pow( Cube[pL->nPar-1]-1,2) / (2.7e-7);
+    if (pL->LC == 1)
+       lnew += - pow( Cube[pL->nPar-1]-1,2) / (2.7e-7);
     
     lnew += logLikelihood(pL);
 

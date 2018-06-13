@@ -15,17 +15,18 @@
 
 struct paramList {
 
-	//root directory for file output
-	char root[50];
-	int nPar;
+    //root directory for file output
+    char root[50];
+    int nPar;
     //MultiNest sampling parameters
     double sampling[8];
-	//Struct for neutrino sources
+    //Struct for neutrino sources
     int nSource, sourcej, fluxj;
     sourceStruct sources[10];
     double Er;
     int LC;
-    
+    int nucPriors;
+
 	//setup for rate integration
 	gsl_function F;
 	double (*rateFunc)(double, double, paramList *, int);
@@ -34,15 +35,15 @@ struct paramList {
     double normPEP;
     double normO;
     double normN;
-    double normBE;	
+    double normBE;
     double normB;
     double normF;
-    
+
     //BSM model parameters
-	int nucScat;
-	int elecScat;
-    
-    double maxL; 
+    int nucScat;
+    int elecScat;
+
+    double maxL;
     int asimov;
     int logBins;
     int maxBins;

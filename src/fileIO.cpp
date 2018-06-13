@@ -67,6 +67,9 @@ int readConfigFile(paramList *pL, char *filename)
     sscanf(temp,"%d",&(pL->logBins));
     
     ret = fgets(temp,200,input);
+    sscanf(temp,"%d",&(pL->nucPriors));
+
+    ret = fgets(temp,200,input);
     sscanf(temp,"%d",&(pL->LC));
     
     //Detector setup
