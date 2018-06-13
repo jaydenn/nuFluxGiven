@@ -185,14 +185,35 @@ int newDetector(paramList *pList, char *name, double exp, int sourcej)
         if(pList->detectors[pList->ndet].bg == 3)
         {
             std::ifstream RFF;
-            RFF.open("data/Rn_Kr_2nuBB-2.dat");
-
-            double Er[478];
-            double Rate[478];
-            for (int i=0; i<478; i++)
+           
+            RFF.open("data/2nuBB_smear10percent.dat");
+            double Er[2400];
+            double Rate[2400];
+            for (int i=0; i<2400; i++)
+            {    
                 RFF >> Er[i] >> Rate[i];
-            pList->detectors[pList->ndet].background = gsl_spline_alloc(gsl_interp_linear,478);
-            gsl_spline_init( pList->detectors[pList->ndet].background,Er,Rate,478);
+                Rate[i]*=0.001;
+            }
+            pList->detectors[pList->ndet].xeBackground = gsl_spline_alloc(gsl_interp_linear,2400);
+            gsl_spline_init( pList->detectors[pList->ndet].xeBackground,Er,Rate,2400);
+            RFF.close();
+            
+            std::ifstream KR;
+            KR.open("data/Kr_smear10percent.dat");
+            for (int i=0; i<620; i++)
+                KR >> Er[i] >> Rate[i];
+            pList->detectors[pList->ndet].krBackground = gsl_spline_alloc(gsl_interp_linear,620);
+            gsl_spline_init( pList->detectors[pList->ndet].krBackground,Er,Rate,620);
+            KR.close();
+            
+            std::ifstream RN;
+            RN.open("data/Rn_smear10percent.dat");
+            for (int i=0; i<947; i++)
+                RN >> Er[i] >> Rate[i];
+            pList->detectors[pList->ndet].rnBackground = gsl_spline_alloc(gsl_interp_linear,947);
+            gsl_spline_init( pList->detectors[pList->ndet].rnBackground,Er,Rate,947);
+            RN.close();
+            
         }
         else
         {
@@ -213,15 +234,41 @@ int newDetector(paramList *pList, char *name, double exp, int sourcej)
 //returns integrated total # background events per tonne/year for bg type, with recoil  Er_min < Er < Er_max
 double intBgRate(detector *det, double Er_min, double Er_max)                            
 {   
+    if(det->bg == 3)
+    {
+        double totBG = 0;
+        if( Er_min >= det->ErL && Er_max <= 620 )
+            totBG+= det->krBgNorm*gsl_spline_eval_integ(det->krBackground, Er_min, Er_max, det->accelkrBg);
+        else if( Er_min < det->ErL && Er_max < det->ErU )
+            totBG+=  det->krBgNorm*gsl_spline_eval_integ(det->krBackground, det->ErL, Er_max, det->accelkrBg);
+        else if( Er_min < det->ErL && Er_max > 620 )
+            totBG+=  det->krBgNorm*gsl_spline_eval_integ(det->krBackground, det->ErL, det->ErU, det->accelkrBg);
+        if( Er_min >= det->ErL && Er_max <= 950 )
+            totBG+=  det->rnBgNorm*gsl_spline_eval_integ(det->rnBackground, Er_min, Er_max, det->accelrnBg);
+        else if( Er_min < det->ErL && Er_max < 950 )
+            totBG+=  det->rnBgNorm*gsl_spline_eval_integ(det->rnBackground, det->ErL, Er_max, det->accelrnBg);
+        else if( Er_min < det->ErL && Er_max > 950 )
+            totBG+=  det->rnBgNorm*gsl_spline_eval_integ(det->rnBackground, det->ErL, 950, det->accelrnBg);
+        if( Er_min >= det->ErL && Er_max <= det->ErU )
+            totBG+=  det->xeBgNorm*gsl_spline_eval_integ(det->xeBackground, Er_min, Er_max, det->accelxeBg);
+        else if( Er_min < det->ErL && Er_max < det->ErU )
+            totBG+=  det->xeBgNorm*gsl_spline_eval_integ(det->xeBackground, det->ErL, Er_max, det->accelxeBg);
+        else if( Er_min < det->ErL && Er_max > det->ErU )
+            totBG+=  det->xeBgNorm*gsl_spline_eval_integ(det->xeBackground, det->ErL, det->ErU, det->accelxeBg);
 
-    if( Er_min >= det->ErL && Er_max <= det->ErU )
-        return gsl_spline_eval_integ(det->background, Er_min, Er_max, det->accelBg);
-    else if( Er_min < det->ErL && Er_max < det->ErU )
-        return gsl_spline_eval_integ(det->background, det->ErL, Er_max, det->accelBg);
-    else if( Er_min < det->ErL && Er_max > det->ErU )
-        return gsl_spline_eval_integ(det->background, det->ErL, det->ErU, det->accelBg);
-    else 
-        return 0;
+        return totBG;
+    }
+    else
+    {
+        if( Er_min >= det->ErL && Er_max <= det->ErU )
+            return gsl_spline_eval_integ(det->background, Er_min, Er_max, det->accelBg);
+        else if( Er_min < det->ErL && Er_max < det->ErU )
+            return gsl_spline_eval_integ(det->background, det->ErL, Er_max, det->accelBg);
+        else if( Er_min < det->ErL && Er_max > det->ErU )
+            return gsl_spline_eval_integ(det->background, det->ErL, det->ErU, det->accelBg);
+        else 
+            return 0;
+    }
 }
 
 double diffBgRate(detector det, double Er)
