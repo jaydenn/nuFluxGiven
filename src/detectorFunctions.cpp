@@ -261,11 +261,11 @@ double intBgRate(detector *det, double Er_min, double Er_max)
     else
     {
         if( Er_min >= det->ErL && Er_max <= det->ErU )
-            return gsl_spline_eval_integ(det->background, Er_min, Er_max, det->accelBg);
+            return det->BgNorm*gsl_spline_eval_integ(det->background, Er_min, Er_max, det->accelBg);
         else if( Er_min < det->ErL && Er_max < det->ErU )
-            return gsl_spline_eval_integ(det->background, det->ErL, Er_max, det->accelBg);
+            return det->BgNorm*gsl_spline_eval_integ(det->background, det->ErL, Er_max, det->accelBg);
         else if( Er_min < det->ErL && Er_max > det->ErU )
-            return gsl_spline_eval_integ(det->background, det->ErL, det->ErU, det->accelBg);
+            return det->BgNorm*gsl_spline_eval_integ(det->background, det->ErL, det->ErU, det->accelBg);
         else 
             return 0;
     }
@@ -273,5 +273,19 @@ double intBgRate(detector *det, double Er_min, double Er_max)
 
 double diffBgRate(detector det, double Er)
 {
-    return gsl_spline_eval(det.background, Er, det.accelBg);
+    if( det.bg=3 )
+    {
+        double totBG=0;
+        if( Er > 5 && Er < 620 )
+            totBG+=gsl_spline_eval(det.krBackground, Er, det.accelkrBg);
+        if( Er > 5 && Er < 950 )
+            totBG+=gsl_spline_eval(det.rnBackground, Er, det.accelrnBg);
+        if( Er > 5 && Er < 2400 )
+            totBG+=gsl_spline_eval(det.xeBackground, Er, det.accelxeBg);
+        return totBG;
+    }
+    else
+    {
+        return gsl_spline_eval(det.background, Er, det.accelBg);
+    }
 }

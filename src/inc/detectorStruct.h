@@ -87,7 +87,8 @@ struct detector {
     {
         nIso=0; AM=-1; isoA[0]=-1; isoFrac[0]=-1; ErL=0; ErU=-1; bg=-1; eff=-1; res=-1, nEvents=0;
         BgNorm = 1; BgUn = -1e-99;
-        
+        krBgNorm = rnBgNorm = xeBgNorm = 1;
+
         ionization = new double*[10]();
         for(int i=0;i<10;i++)
             ionization[i] = new double [100]();

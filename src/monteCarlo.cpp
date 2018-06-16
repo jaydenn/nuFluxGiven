@@ -58,7 +58,7 @@ void generateBinnedData(paramList *pList, int detj, int b, int simSeed)
         Er_max = Er_min + pList->detectors[detj].binW[i];
 
         SM  = intNuRate( Er_min, Er_max, pList, detj);
-        BG  = pList->detectors[detj].BgNorm * b * intBgRate(&(pList->detectors[detj]), Er_min, Er_max) ;
+        BG  = b * intBgRate(&(pList->detectors[detj]), Er_min, Er_max) ;
 
         if( pList->asimov == 1)
             pList->detectors[detj].binnedData[i] = pList->detectors[detj].exposure * ( SM + BG );
